@@ -10,7 +10,7 @@
 #   HUBOT_GITHUB_USER
 #
 # Commands:
-#   hubot deploy - merges master into production to trigger a delpoy to Heroku
+#   hubot deploy <branch> to <environment> - merges master into production to trigger a delpoy to Heroku
 #
 # Notes:
 #   HUBOT_GITHUB_API allows you to set a custom URL path (for Github enterprise users)
@@ -24,14 +24,14 @@ module.exports = (robot) ->
   app     = 'liftoff-team/sarce-trainer-admin'
 
   # http://rubular.com/r/vnnwHvt75L
-  robot.respond /deploy to ([a-zA-Z])*/i, (msg) ->
-    head    = 'master'
-    base    = 'production'
+  robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
+    head    = msg.match[1] || 'master'
+    base    = msg.match[2]
 
-    msg.send "Deploying master into production"
+    msg.send "Roger! Merging #{head} to #{base}."
 
-    # github.branches(app).merge head, { base: base }, (merge) ->
-    #   if merge.message
-    #     msg.send merge.message
-    #   else
-    #     msg.send "Merged the crap out of it"
+    github.branches(app).merge head, { base: base }, (merge) ->
+      if merge.message
+        msg.send merge.message
+      else
+        msg.send "Braches merged. Deploy should begin soon."
