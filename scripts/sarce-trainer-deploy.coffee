@@ -21,23 +21,18 @@
 
 module.exports = (robot) ->
   github  = require("githubot")(robot)
-  app     = "sarce-trainer-admin"
+  app     = "liftoff-team/sarce-trainer-admin"
 
   # http://rubular.com/r/vnnwHvt75L
   robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
     head    = msg.match[1] || 'master'
     base    = msg.match[2]
 
-    msg.send "Roger! Merging #{head} to #{base}."
+    msg.send "Roger! Deployment process started..."
 
     github.branches(app).merge head, { base: base }, (merge) ->
       if merge.message
         msg.send merge.message
       else
-        msg.send "Braches merged. Deploy should begin soon."
+        msg.send "Branch #{head} merged into #{base}."
 
-    github.branches("liftoff-team/sarce-trainer-admin").merge head, { base: base }, (merge) ->
-      if merge.message
-        msg.send merge.message
-      else
-        msg.send "Braches merged. Deploy should begin soon."
