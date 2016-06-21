@@ -1,6 +1,0 @@
-deploy:
-    heroku:
-        master: production
-            appname: sarce-trainer-admin
-        feature-branch: master
-            appname: sarce-trainer-admin
