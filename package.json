@@ -6,6 +6,7 @@
   "description": "Helful robot for the LIFTOFF team.",
   "dependencies": {
     "hubot": "^2.19.0",
+    "hubot-deployer": "^0.2.2",
     "hubot-diagnostics": "0.0.1",
     "hubot-google-images": "^0.2.6",
     "hubot-google-translate": "^0.2.0",
