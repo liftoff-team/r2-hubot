@@ -5,6 +5,7 @@
   "author": "Arnaud Lenglet <arlenglet@gmail.com>",
   "description": "Helful robot for the LIFTOFF team.",
   "dependencies": {
+    "githubot": "^1.0.0",
     "hubot": "^2.19.0",
     "hubot-diagnostics": "0.0.1",
     "hubot-google-images": "^0.2.6",
