@@ -38,11 +38,18 @@ module.exports = (robot) ->
     msg.send "First, let me check the branch's build status."
     lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
 
-    unless lastKnownMasterBuild
+    try
+      build = JSON.parse(lastKnownMasterBuild).build
+    catch error
+      msg.reply: "Error: #{error}"
+      return
+
+    unless build
       msg.reply "Error: I don't know the last `#{head}` build. Please push to `#{head}` to trigger a build."
       return
 
-    build = JSON.parse(lastKnownMasterBuild).build
+    console.log lastKnownMasterBuild
+    console.log build
 
     unless build.status is 'success'
       msg.reply "Sorry, but `#{head}` is *red*. You know we *can't deploy* on red. Please fix the `#{head}` branch before trying to deploy again (Last build id: #{build.id}, status: #{build.status})"
@@ -80,6 +87,7 @@ module.exports = (robot) ->
 
     if branch is 'master'
       robot.brain.set('lastKnownMasterBuild', build)
+      robot.messageRoom 'ci' "Updated last known build for `master` branch with this one (id: #{build.id}, status: #{build.status})."
 
 #
 # TODO (Arnaud Lenglet): activate the following with a promise
