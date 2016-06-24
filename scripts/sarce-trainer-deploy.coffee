@@ -23,7 +23,7 @@
 #
 module.exports = (robot) ->
 
-  robot.hear /last build status for (.*)/i, (msg) ->
+  robot.hear /last build status for [a-zA-Z]*/i, (msg) ->
     branch = msg.match[1]
 
     unless branch is 'master'
@@ -91,15 +91,10 @@ module.exports = (robot) ->
   # STEP 3: Waiting for Codeship notification on build succeed
 
   robot.router.post '/hubot/builds/codeship', (req, res) ->
-    console.log req
-    console.log res
-
     try
-      build   = JSON.parse(req.body).build
+      build = JSON.parse(req.body).build
     catch
-      build   = JSON.parse(req.body.payload).build
-
-    console.log build
+      build = req.body.build
 
     branch = build.branch
     status = build.status
@@ -112,7 +107,9 @@ module.exports = (robot) ->
 
     if branch is 'master'
       robot.brain.set 'lastKnownMasterBuild', build
-      robot.messageRoom 'ci', "Updated last known build for `master` branch with this one (id: #{build.id}, status: #{build.status})."
+      robot.messageRoom 'ci', "Updated last known build for `master` branch with this one (id: #{build.build_id}, status: #{build.status})."
+
+    res.send 'OK'
 
 
 getLastKnownMasterBuild = () ->
