@@ -105,9 +105,9 @@ module.exports = (robot) ->
       else
         robot.messageRoom 'ci', "Error! The Codeship build of the `production` branch failed. Please check it asap!"
 
-    if branch is 'master'
+    if branch is 'master' and status in ['success', 'error']
       robot.brain.set 'lastKnownMasterBuild', build
-      robot.messageRoom 'ci', "Updated last known build for `master` branch with this one (id: #{build.build_id}, status: #{build.status})."
+      robot.messageRoom 'ci', "Last known build status for `master` is now: #{build.status}."
 
     res.send 'OK'
 
