@@ -51,28 +51,26 @@ module.exports = (robot) ->
       msg.reply "I'm sorry, I actually can only deploy `master` to `production`."
       return
 
-    msg.send "Roger! I will try to deploy `#{head}` into `#{base}`. :robot_face:"
+    msg.send "Roger! I will try to deploy `#{head}` into `#{base}`."
 
     # ----------------------------------------
     # STEP 1: Check master build status
 
-    msg.send "First, let me check the branch's build status."
-
     try
       build = getLastKnownMasterBuild(robot)
     catch error
-      msg.reply "Error: #{error}"
+      msg.reply ":x: Error: #{error}"
       return
 
     if build is -1
-      msg.reply "Error: I don't know the last `#{head}` build. Please push to `#{head}` to trigger a build."
+      msg.reply ":x: Error: I don't know the last `#{head}` build. Please push to `#{head}` to trigger a build."
       return
 
     unless build.status is 'success'
-      msg.reply "Sorry, but `#{head}` is *red*. You know we *can't deploy* on red. Please fix the `#{head}` branch before trying to deploy again (Last build id: #{build.id}, status: #{build.status})"
+      msg.reply ":x: Sorry, but `#{head}` is *red*. You know we *can't deploy* on red. Please fix the `#{head}` branch before trying to deploy again (Last build id: #{build.id}, status: #{build.status})"
       return
 
-    msg.send ":white_check_mark: all green!"
+    msg.send ":white_check_mark: Good! Last build is green."
 
     # ----------------------------------------
     # STEP 2: Merge master into production
@@ -80,12 +78,9 @@ module.exports = (robot) ->
     github  = require("githubot")(robot)
     app     = 'liftoff-team/sarce-trainer-admin'
 
-    msg.send "Give me a minute to merge the #{head} branch into #{base}."
-
     github.branches(app).merge head, { base: base }, (merge) ->
-      msg.send ":white_check_mark: merged completed!"
-
-    msg.send "Codeship is deploying our app. Please check the status in the #ci channel."
+      msg.send ":white_check_mark: the #{head} branch have been merged into #{base}!"
+      msg.send "Codeship is now deploying our app. I'll post update in the #ci channel."
 
   # ----------------------------------------
   # STEP 3: Waiting for Codeship notification on build succeed
@@ -101,11 +96,11 @@ module.exports = (robot) ->
 
     if branch is 'production'
       if status is 'success'
-        robot.messageRoom 'ci', "And we're live! Sarce-Trainer-Admin is deployed to production! :rocket:"
+        robot.messageRoom 'ci', ":white_check_mark: And we're live! Sarce-Trainer-Admin is deployed to production! :rocket:"
       else if status is 'testing'
-        robot.messageRoom 'ci', "Sarce-Trainer-Admin app deployment started via Codeship."
+        robot.messageRoom 'ci', ":warning: Sarce-Trainer-Admin app deployment to production started via Codeship."
       else if status is 'error'
-        robot.messageRoom 'ci', "Error! The Codeship build of the `production` branch failed. Please check it asap!"
+        robot.messageRoom 'ci', ":x: Error! The Codeship build of the `production` branch failed. Please check it asap!"
       else
         robot.messageRoom 'ci', "New Codeship build event: #{build}"
 
