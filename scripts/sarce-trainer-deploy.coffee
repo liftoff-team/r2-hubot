@@ -41,7 +41,7 @@ module.exports = (robot) ->
     try
       build = JSON.parse(lastKnownMasterBuild).build
     catch error
-      msg.reply: "Error: #{error}"
+      msg.reply "Error: #{error}"
       return
 
     unless build
@@ -86,8 +86,8 @@ module.exports = (robot) ->
         robot.messageRoom 'ci', "Error! The Codeship build of the `production` branch failed. Please check it asap!"
 
     if branch is 'master'
-      robot.brain.set('lastKnownMasterBuild', build)
-      robot.messageRoom 'ci' "Updated last known build for `master` branch with this one (id: #{build.id}, status: #{build.status})."
+      robot.brain.set 'lastKnownMasterBuild', build
+      robot.messageRoom 'ci', "Updated last known build for `master` branch with this one (id: #{build.id}, status: #{build.status})."
 
 #
 # TODO (Arnaud Lenglet): activate the following with a promise
