@@ -30,20 +30,21 @@ module.exports = (robot) ->
       msg.reply "I'm sorry, I actually can only deploy `master` to `production`."
       return
 
-    msg.reply "Roger! I will try to deploy `#{head}` into `#{base}`. :robot_face:"
+    msg.send "Roger! I will try to deploy `#{head}` into `#{base}`. :robot_face:"
 
     # ----------------------------------------
     # STEP 1: Check master build status
 
     msg.send "First, let me check the branch's build status."
-    lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild')
+    lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
 
     unless lastKnownMasterBuild
       msg.reply "Error: I don't know the last `#{head}` build. Please push to `#{head}` to trigger a build."
       return
 
-    unless lastKnownMasterBuild.status is 'success'
-      build = lastKnownMasterBuild
+    build = JSON.parse(lastKnownMasterBuild).build
+
+    unless build.status is 'success'
       msg.reply "Sorry, but `#{head}` is *red*. You know we *can't deploy* on red. Please fix the `#{head}` branch before trying to deploy again (Last build id: #{build.id}, status: #{build.status})"
       return
 
@@ -59,10 +60,9 @@ module.exports = (robot) ->
 
     github.branches(app).merge head, { base: base }, (merge) ->
       if merge.message
-        msg.send "Error! I can't merge. Here is the GitHub's API response: \"#{merge.message}\""
-        return
+        msg.send "Here is the GitHub's API response: \"#{merge.message}\""
       else
-        msg.send "Branches have been successfully merged! Codeship deployment should begin shortly."
+        msg.send "Branches have been successfully merged!"
 
   # ----------------------------------------
   # STEP 3: Waiting for Codeship notification on build succeed
