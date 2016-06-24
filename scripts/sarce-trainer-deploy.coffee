@@ -23,7 +23,7 @@
 #
 module.exports = (robot) ->
 
-  robot.hear /last build status for [a-zA-Z]*/i, (msg) ->
+  robot.hear /last build status for ([a-zA-Z]+)/i, (msg) ->
     branch = msg.match[1]
 
     unless branch is 'master'
@@ -31,16 +31,17 @@ module.exports = (robot) ->
       return
 
     try
-      build = getLastKnownMasterBuild
-    catch
+      build = getLastKnownMasterBuild(robot)
+    catch error
       msg.reply "Error: #{error}"
       return
 
     if build is -1
-      msg.reply "I don't know the last `#{head}` build."
+      msg.reply "I don't know the last `#{branch}` build."
       return
 
-    msg.reply "Last know build for master: id: #{build.id}, status: #{build.status}"
+    msg.reply "Last know build status for master: #{build.status}"
+
 
   robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
     head    = msg.match[1] || 'master'
@@ -58,7 +59,7 @@ module.exports = (robot) ->
     msg.send "First, let me check the branch's build status."
 
     try
-      build = getLastKnownMasterBuild
+      build = getLastKnownMasterBuild(robot)
     catch error
       msg.reply "Error: #{error}"
       return
@@ -112,11 +113,14 @@ module.exports = (robot) ->
     res.send 'OK'
 
 
-getLastKnownMasterBuild = () ->
+getLastKnownMasterBuild = (robot) ->
   lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
-  console.log lastKnownMasterBuild
 
-  build = JSON.parse(lastKnownMasterBuild).build
+  try
+    build = JSON.parse(lastKnownMasterBuild).build || JSON.parse(lastKnownMasterBuild)
+  catch
+    build = lastKnownMasterBuild.build || lastKnownMasterBuild
+
   console.log build
 
   return -1 unless build
