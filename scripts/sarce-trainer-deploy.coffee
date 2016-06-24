@@ -11,6 +11,7 @@
 #
 # Commands:
 #   hubot deploy <branch> to <environment> - merges master into production to trigger a deploy to Heroku
+#   hubot last build status for <branch> - display the last build data for the given branch
 #
 # Author:
 #   arnlen
@@ -21,6 +22,25 @@
 #   3. (todo) Tag version
 #
 module.exports = (robot) ->
+
+  robot.hear /last build status for (.*)/i, (msg) ->
+    branch = msg.match[1]
+
+    unless branch is 'master'
+      msg.reply "Sorry, my brain is tiny: I can only remind build for the `master` branch."
+      return
+
+    try
+      build = getLastKnownMasterBuild
+    catch
+      msg.reply "Error: #{error}"
+      return
+
+    if build is -1
+      msg.reply "I don't know the last `#{head}` build."
+      return
+
+    msg.reply "Last know build for master: id: #{build.id}, status: #{build.status}"
 
   robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
     head    = msg.match[1] || 'master'
@@ -36,20 +56,16 @@ module.exports = (robot) ->
     # STEP 1: Check master build status
 
     msg.send "First, let me check the branch's build status."
-    lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
 
     try
-      build = JSON.parse(lastKnownMasterBuild).build
+      build = getLastKnownMasterBuild
     catch error
       msg.reply "Error: #{error}"
       return
 
-    unless build
+    if build is -1
       msg.reply "Error: I don't know the last `#{head}` build. Please push to `#{head}` to trigger a build."
       return
-
-    console.log lastKnownMasterBuild
-    console.log build
 
     unless build.status is 'success'
       msg.reply "Sorry, but `#{head}` is *red*. You know we *can't deploy* on red. Please fix the `#{head}` branch before trying to deploy again (Last build id: #{build.id}, status: #{build.status})"
@@ -75,7 +91,16 @@ module.exports = (robot) ->
   # STEP 3: Waiting for Codeship notification on build succeed
 
   robot.router.post '/hubot/builds/codeship', (req, res) ->
-    build   = JSON.parse(req.body).build
+    console.log req
+    console.log res
+
+    try
+      build   = JSON.parse(req.body).build
+    catch
+      build   = JSON.parse(req.body.payload).build
+
+    console.log build
+
     branch = build.branch
     status = build.status
 
@@ -88,6 +113,18 @@ module.exports = (robot) ->
     if branch is 'master'
       robot.brain.set 'lastKnownMasterBuild', build
       robot.messageRoom 'ci', "Updated last known build for `master` branch with this one (id: #{build.id}, status: #{build.status})."
+
+
+getLastKnownMasterBuild = () ->
+  lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
+  console.log lastKnownMasterBuild
+
+  build = JSON.parse(lastKnownMasterBuild).build
+  console.log build
+
+  return -1 unless build
+  return build
+
 
 #
 # TODO (Arnaud Lenglet): activate the following with a promise
