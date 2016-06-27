@@ -45,13 +45,13 @@ module.exports = (robot) ->
 
   robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
     head    = msg.match[1] || 'master'
-    base    = msg.match[2]
+    target  = msg.match[2]
 
-    unless head is 'master' and base is 'production'
+    unless head is 'master' and target is 'production'
       msg.reply "I'm sorry, I actually can only deploy `master` to `production`."
       return
 
-    msg.send "Roger! I will try to deploy `#{head}` into `#{base}`."
+    msg.send "Roger! I will try to deploy `#{head}` into `#{target}`."
 
     # ----------------------------------------
     # STEP 1: Check master build status
@@ -75,11 +75,11 @@ module.exports = (robot) ->
     # ----------------------------------------
     # STEP 2: Merge master into production
 
-    github  = require("githubot")(robot)
+    github  = require("githubot")(robot, errorHandler: (callback) -> console.log ("Print this: #{callback}"))
     app     = 'liftoff-team/sarce-trainer-admin'
 
-    github.branches(app).merge head, { base: base }, (merge) ->
-      msg.send ":white_check_mark: the #{head} branch have been merged into #{base}!"
+    github.branches(app).merge head, into: target, (mergeCommit) ->
+      msg.send ":white_check_mark: the #{head} branch have been merged into #{target}!"
       msg.send "Codeship is now deploying our app. I'll post update in the #ci channel."
 
   # ----------------------------------------
