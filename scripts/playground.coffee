@@ -18,7 +18,7 @@
 # Author:
 #   arnlen
 
-module.exports = (robot) ->
+# module.exports = (robot) ->
 
   # robot.respond /pomodoro (.*)/i, (res) ->
   #   command = res.match[1]
