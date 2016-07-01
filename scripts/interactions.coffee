@@ -16,3 +16,7 @@ module.exports = (robot) ->
   hello = ['Hello!', 'Hi!', 'Nice to see you again. :smile:']
   robot.respond /hello?|hi?/i, (res) ->
     res.reply res.random hello
+
+  noProb = ['No problem bro.', 'No prob!', 'Forget about that. :smile:', "Errare humanum est (that the good part to be a robot!)."]
+  robot.respond /sorry?|my bad?|apologize?/i, (res) ->
+    res.reply res.random noProb
