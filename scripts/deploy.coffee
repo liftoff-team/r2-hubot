@@ -83,10 +83,10 @@ module.exports = (robot) ->
     # ----------------------------------------
     # STEP 2: Merge master into production
 
-    app     = 'user/repo'
+    app     = 'liftoff-team/sarce-trainer-admin'
     github  = require("githubot")(robot)
     github.handleErrors (callback) ->
-      msg.reply ":x: Error during merge process: #{callback.error.toLowerCase()}."
+      msg.reply ":x: Error during merge process: #{callback.error.toLowerCase()} (#{callback.body if callback.body})."
 
     github.branches(app).merge head, into: target, (mergeCommit) ->
       msg.send ":white_check_mark: the #{head} branch have been merged into #{target}!"
