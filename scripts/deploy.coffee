@@ -10,8 +10,9 @@
 #   HUBOT_GITHUB_USER
 #
 # Commands:
-#   hubot deploy <branch> to <environment> - merges master into production to trigger a deploy to Heroku
-#   hubot last build status for <branch> - display the last build data for the given branch
+#   hubot last build status for <branch> - returns the last know build status for a specific branch.
+#   hubot deploy <branch> to <environment> - merges master into production to trigger a deploy to Heroku.
+#   hubot last build status for <branch> - display the last build data for the given branch.
 #
 # Author:
 #   arnlen
@@ -22,6 +23,10 @@
 #   3. (todo) Tag version
 #
 module.exports = (robot) ->
+
+  #
+  # ======================= "LAST BUILD STATUS FOR" COMMAND =======================
+  #
 
   robot.hear /last build status for ([a-zA-Z]+)/i, (msg) ->
     branch = msg.match[1]
@@ -42,6 +47,9 @@ module.exports = (robot) ->
 
     msg.reply "Last know build status for master: #{build.status}"
 
+  #
+  # ======================= "DEPLOY" COMMAND =======================
+  #
 
   robot.respond /deploy ([a-zA-Z]*)\s?to ([a-zA-Z]*)/i, (msg) ->
     head    = msg.match[1] || 'master'
@@ -113,6 +121,10 @@ module.exports = (robot) ->
     res.send 'OK'
 
 
+#
+# ======================= Private methods =======================
+#
+
 getLastKnownMasterBuild = (robot) ->
   lastKnownMasterBuild = robot.brain.get('lastKnownMasterBuild') || process.env.CODESHIP_LAST_MASTER_BUILD
 
@@ -125,44 +137,3 @@ getLastKnownMasterBuild = (robot) ->
 
   return -1 unless build
   return build
-
-
-#
-# TODO (Arnaud Lenglet): activate the following with a promise
-#
-getLastMasterBuild = () ->
-  codeshipApiKey = process.env.CODESHIP_API_KEY
-  codeshipApiURL = "https://codeship.com/api/v1/projects/159694.json?api_key=#{codeshipApiKey}"
-
-  unless codeshipApiKey
-    msg.reply "Please set the CODESHIP_API_KEY"
-    return
-
-  robot.http(codeshipApiURL)
-    .header('Accept', 'application/json')
-    .get() (err, res, body) ->
-      try
-        parsedBody = JSON.parse body
-      catch error
-        msg.reply "Grrrr, error: \"#{error}\""
-        return
-
-      builds = parsedBody.builds
-      masterIsGreen = false
-
-      for build in builds
-        branch = build.branch
-        status = build.status
-
-        if branch is 'master'
-          if status is 'success'
-            masterIsGreen = true
-          else
-            msg.reply "Master is red, please fix it before trying to deploy again. Last build id: #{build['id']}, status: #{build['status']}"
-            return
-
-      unless masterIsGreen is true
-        msg.reply "Master is red, please fix it before trying to deploy again."
-        return
-
-      msg.send "Master is green, continuing deployment process."

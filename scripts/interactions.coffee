@@ -9,6 +9,9 @@
 
 module.exports = (robot) ->
   you_welcome = ['You welcome.', 'My pleasure.', 'No problem.', 'It is an honor to help you.', 'Always a pleasure.', 'Happy to serve.']
-
   robot.respond /thank?|thx?/i, (res) ->
     res.reply res.random you_welcome
+
+  hello = ['Hello!', 'Hi!', 'Nice to see you again. :smile:']
+  robot.respond /hello?|hi?/i, (res) ->
+    res.reply res.random hello
