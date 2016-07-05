@@ -13,10 +13,10 @@ module.exports = (robot) ->
   robot.respond /thank?|thx?/i, (res) ->
     res.reply res.random you_welcome
 
-  hello = ['Hello!', 'Hi!', 'Nice to see you again. :smile:']
+  hello = ['Hello!', 'Hi!', 'Nice to see you again. :smiley:']
   robot.respond /hello?|hi?/i, (res) ->
     res.reply res.random hello
 
-  noProb = ['No problem bro.', 'No prob!', 'Forget about that. :smile:', "Errare humanum est (that the good part to be a robot!)."]
+  noProb = ['No problem bro.', 'No prob!', 'Forget about that. :smile:', "Errare humanum est (that's the good part of being a robot)."]
   robot.respond /sorry?|my bad?|apologize?/i, (res) ->
     res.reply res.random noProb
